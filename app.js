@@ -9,13 +9,9 @@ const config = {
         url: 'mongodb://Ridley12:locallibrary1986@ds141613.mlab.com:41613/students-schools',
 		type: 'mongo',
 		onError: (err) => {
-			console.log('DB Connection Failed!')
-		},
+			console.log('DB Connection Failed!')},
 		onSuccess: () => {
-			console.log('DB Successfully Connected!')
-		}
-	}
-}
+			console.log('DB Successfully Connected!')}}}
 
 const app = vertex.app(config) // initialize app with config options
 
