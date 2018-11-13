@@ -1,28 +1,49 @@
-// Full Documentation - https://www.turbo360.co/docs
-const vertex = require('vertex360')({site_id: process.env.TURBO_APP_ID})
+var createError = require('http-errors');
+var express = require('express');
+var path = require('path');
+var cookieParser = require('cookie-parser');
+var logger = require('morgan');
 
-const config = {
-	views: 'views', 		// Set views directory 
-	static: 'public', 		// Set static assets directory
-	db: { 					// Database configuration. Remember to set env variables in .env file: MONGODB_URI, PROD_MONGODB_URI
-		//url: (process.env.TURBO_ENV == 'dev') ? process.env.MONGODB_URI : process.env.PROD_MONGODB_URI,
-        url: 'mongodb://Ridley12:locallibrary1986@ds141613.mlab.com:41613/students-schools',
-		type: 'mongo',
-		onError: (err) => {
-			console.log('DB Connection Failed!')},
-		onSuccess: () => {
-			console.log('DB Successfully Connected!')}}}
+var indexRouter = require('./routes/index');
+var apiRouter = require('./routes/api');
 
-const app = vertex.app(config) // initialize app with config options
+var app = express();
 
+//Set up mongoose connection
+var mongoose = require('mongoose');
+var mongoDB = 'mongodb://Ridley12:locallibrary1986@ds263639.mlab.com:63639/students-school';
+mongoose.connect(mongoDB);
+mongoose.Promise = global.Promise;
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
-// import routes
-const index = require('./routes/index')
-const api = require('./routes/api')
+// view engine setup
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'hbs');
 
-// set routes
-app.use('/', index)
-app.use('/api', api) // sample API Routes
+app.use(logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
 
+app.use('/', indexRouter);
+app.use('/api', apiRouter);
 
-module.exports = app
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  next(createError(404));
+});
+
+// error handler
+app.use(function(err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  // render the error page
+  res.status(err.status || 500);
+  res.render('error');
+});
+
+module.exports = app;
